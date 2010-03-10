@@ -1,3 +1,3 @@
 (function(){
-     window.Chikun = {};
+    window.Chikun = {};
 })();
