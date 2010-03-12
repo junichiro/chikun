@@ -5,8 +5,12 @@
 
 <h1>join Game > {{game.display_title}}</h1>
 <ul>
-  <li>owner: {{ game.owner_name }}</li>
-  <li>created_at: {{game.created_at}}</li>
+  <li>owner: {{game.owner_is}} {{ game.display_owner_name }}</li>
+  <li>komi: {{ game.komi }}</li>
+  {% if game.is_black %}
+  <li>random</li>
+  {% endif %}
+ <li>created_at: {{game.created_at}}</li>
 </ul>
 
 <form method="post">

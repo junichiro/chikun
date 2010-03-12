@@ -55,6 +55,9 @@ class GamePage(webapp.RequestHandler):
             hash = md5.hexdigest()
             game.owner = hash[5:10]
             game.owner_name = self.request.get("owner_name")
+            game.komi = float( self.request.get("komi") )
+            game.black_is = self.request.get("black_is") if len( self.request.get("black_is") ) > 0 else None
+
 
             game.put()
 
@@ -67,7 +70,7 @@ class GamePage(webapp.RequestHandler):
                 hash = md5.hexdigest()
                 game.client = hash[5:10]
                 game.client_name = self.request.get("client_name")
- 
+                game.status = True
                 game.put()
                 self.redirect("/games/" + game_id + "/" + game.client)
 

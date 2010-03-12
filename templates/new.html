@@ -11,8 +11,29 @@
 
   <label id="owner_name">OwnerName</label> <br />
   <input type="text" name="owner_name" /><br />
-  <button type="submit">create game</button>
+
+  <label id="komi">Komi</label> <br />
+  <select name="komi" id="select_komi"></select><br />
+
+  <label id="black_is">Black is</label><br />
+  <input type="radio" name="black_is" value="owner" />owner
+  <input type="radio" name="black_is" value="client" />client
+  <input type="radio" name="black_is" value="" />random
+
+  <p><button type="submit">create game</button></p>
 </form>
 
+<script type="text/javascript">
+
+  $("body").ready( function(){
+  for( var i = 0 ; i <= 40 ; i ++ )
+  {
+	var value = ( i - 20 ) * 0.5 ;
+	var option = $("<option/>").text( value ).attr( { "value" : value } );
+	if( value == 0 ) option.attr("selected" ,true );
+	$("#select_komi").append( option );
+  };
+  } );
+</script>
 
 {% endblock %}
