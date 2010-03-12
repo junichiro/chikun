@@ -2,4 +2,14 @@
 
 {% block content %}
     <a href="./new">new game</a>
+
+<hr />
+<h2>Recent Games</h2>
+
+<ul>
+  {% for game in games %}
+  <li><a href="/games/{{game.session_key}}">{{game.display_title}}</a> {{game.display_owner_name}}  {{game.status}}  {{game.created_at}}</li>
+  {% endfor %}
+</ul>
+
 {% endblock %}

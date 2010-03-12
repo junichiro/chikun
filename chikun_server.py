@@ -14,6 +14,7 @@ class IndexPage(webapp.RequestHandler):
         template.render(
             template_path('index.html') ,
             {
+                  "games" : models.Game.all().order("-created_at")
             } )
         )
 
@@ -48,6 +49,7 @@ class GamePage(webapp.RequestHandler):
         if not game :
             game = models.Game()
             game.session_key = game_id
+            game.title = self.request.get("title")
             md5 = hashlib.md5()
             md5.update( str( datetime.datetime.now()) + game_id  )
             hash = md5.hexdigest()
