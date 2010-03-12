@@ -1,0 +1,19 @@
+{% extends '_base.html' %}
+
+
+{% block content %}
+
+<h1>join Game</h1>
+<ul>
+  <li>owner: {{ game.owner_name }}</li>
+  <li>created_at: {{game.created_at}}</li>
+</ul>
+
+<form method="post">
+  <label id="owner_name">JoinName</label> <br />
+  <input type="text" name="client_name" /><br />
+  <button type="submit">join game</button>
+</form>
+
+
+{% endblock %}
