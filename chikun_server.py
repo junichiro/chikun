@@ -1,4 +1,4 @@
-import cgi , hashlib , datetime
+import cgi , hashlib , datetime ,random
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -23,7 +23,7 @@ class NewPage(webapp.RequestHandler):
         md5 = hashlib.md5()
         md5.update( str( datetime.datetime.now() ) )
         hash = md5.hexdigest()
-        self.redirect( "/games/" + hash )
+        self.redirect( "/game/" + hash )
 
 
 class GamePage(webapp.RequestHandler):
@@ -36,12 +36,12 @@ class GamePage(webapp.RequestHandler):
             if not  game.client :
                 self.response.out.write( 
                     template.render( template_path('join.html') , {
-                            "game" : game } )
+                            "game" : game , "actions" : models.GameAction.all().filter("game = ", game).order("-created_at")  } )
                     )
             else :
                 self.response.out.write(
                     template.render( template_path('show.html') , { 
-                            "game" : game } )
+                            "game" : game , "actions" : models.GameAction.all().filter("game = ", game).order("-created_at") } )
                     )
 
     def post(self,game_id):
@@ -50,6 +50,7 @@ class GamePage(webapp.RequestHandler):
             game = models.Game()
             game.session_key = game_id
             game.title = self.request.get("title")
+            game.size = int(self.request.get("size"))
             md5 = hashlib.md5()
             md5.update( str( datetime.datetime.now()) + game_id  )
             hash = md5.hexdigest()
@@ -61,7 +62,7 @@ class GamePage(webapp.RequestHandler):
 
             game.put()
 
-            self.redirect("/games/" + game_id + "/" + game.owner)
+            self.redirect("/game/" + game_id + "/" + game.owner)
 
         else:
             if not game.client :
@@ -70,22 +71,71 @@ class GamePage(webapp.RequestHandler):
                 hash = md5.hexdigest()
                 game.client = hash[5:10]
                 game.client_name = self.request.get("client_name")
+                if not game.black_is :
+                    if int( random.random() * 2 ) > 0 :
+                        game.black_is = "owner"
+                    else :
+                        game.black_is = "client"
+
                 game.status = True
+
+
                 game.put()
-                self.redirect("/games/" + game_id + "/" + game.client)
+                self.redirect("/game/" + game_id + "/" + game.client)
 
 
         self.response.out.write( game )
 
 class GamePlayPage(webapp.RequestHandler):
     def get(self,game_id,player_id):
-        print player_id
+        game = models.Game.exist( game_id )
+        if not game :
+            self.response.set_status(404)
+            self.response.out.write("404 not found")
+        else :
+            if not game.client and game.owner == player_id :
+                self.response.out.write( template.render( template_path("edit.html") , { "game" : game  , "actions" : models.GameAction.all().filter("game = " , game).order("-created_at")  } ) )
+            else :
+                print "aa"
   
+class GamePutPage(webapp.RequestHandler):
+    def get(self,game_id,player_id,pos):
+        game = models.Game.exist( game_id )
+        if not game :
+            self.response.set_status(404)
+            self.response.out.write("404 not found")
+            return False
+        else :
+            check = models.GameAction.gql("WHERE game = :game AND position = :pos " , game = game , pos = pos )
+
+            if check.get() :
+                self.response.set_status(500)
+                self.response.out.write("500 error")
+                return False
+
+            recent = models.GameAction.all().filter("status = ", True).order("-created_at")
+
+            action = models.GameAction()
+            action.game = game
+            action.game_key = game.session_key
+            action.player_key = player_id
+            if not recent.get() :
+                action.stone ="black"
+                action.num = 0
+                action.position = pos
+                action.seek_time = 0
+                action.status = False
+
+            action.put()
+
+            self.redirect("/game/" + game_id + "/" + player_id )
+
 app = webapp.WSGIApplication(
     [('/', IndexPage), 
      ('/new' , NewPage) , 
-     ('/games/(.+?)/(.+?)' , GamePlayPage ) , 
-     ('/games/([^/]+?)$' , GamePage ) , 
+     ('/game/(.+?)/(.+?)/(.+?)' , GamePutPage ),
+     ('/game/(.+?)/([^/]+?)' , GamePlayPage ) , 
+     ('/game/([^/]+?)$' , GamePage ) , 
      ],debug=True)
 
 

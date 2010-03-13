@@ -5,6 +5,7 @@ class Game(db.Model):
     session_key = db.StringProperty()
     title = db.StringProperty()
     komi = db.FloatProperty(default=float(0))
+    size = db.IntegerProperty(default=19)
     black_is = db.StringProperty()
     owner = db.StringProperty()
     client = db.StringProperty()
@@ -32,14 +33,28 @@ class Game(db.Model):
         if not self.black_is :
             return False
         if self.black_is == "owner" :
-            return "●"
+            return "B"
         else :
-            return "○"
+            return "W"
+
 
     def client_is(self):
         if not self.black_is :
             return False
         if self.black_is == "client" :
-            return "●"
+            return "B"
         else :
-            return "○"
+            return "W"
+
+
+
+class GameAction(db.Model):
+    game = db.ReferenceProperty(Game)
+    game_key = db.StringProperty()
+    stone = db.StringProperty()
+    player_key = db.StringProperty()
+    num = db.IntegerProperty(default=1)
+    position = db.StringProperty()
+    seek_time = db.IntegerProperty()
+    status = db.BooleanProperty(default=True)
+    created_at = db.DateTimeProperty(auto_now_add=True)
